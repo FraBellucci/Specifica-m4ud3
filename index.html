@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giochi Stress Lavoro-Correlato</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0a3d66 0%, #1e5a8e 100%);
+            color: #f5faff;
+            min-height: 100vh;
+            padding: 30px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(79, 172, 254, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(76, 175, 80, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .game-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: none;
+            position: relative;
+            z-index: 1;
+        }
+
+        .game-container.active {
+            display: block;
+            animation: fadeInScale 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeInScale {
+            from { 
+                opacity: 0; 
+                transform: translateY(30px) scale(0.95);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 32px;
+            padding: 50px;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .container:hover {
+            box-shadow: 
+                0 25px 70px rgba(0, 0, 0, 0.35),
+                0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .game-progress {
+            font-size: 0.9em;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            opacity: 0.7;
+            margin-bottom: 15px;
+            color: #4facfe;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 800;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #f5faff 0%, #4facfe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .header .emoji {
+            font-size: 3.5em;
+            display: block;
+            margin-bottom: 15px;
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 5px 15px rgba(79, 172, 254, 0.3));
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.85;
+            font-weight: 500;
+        }
+
+        /* GAME 1 - Word Builder */
+        .stress-bar-container {
+            margin-bottom: 35px;
+        }
+
+        .stress-label {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .stress-bar {
+            width: 100%;
+            height: 35px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) inset;
+            position: relative;
+        }
+
+        .stress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .stress-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #ff4444, #ff6b6b, #ff8888);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
+        }
+
+        .stress-fill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .stress-fill.medium {
+            background: linear-gradient(90deg, #ffa500, #ffb733, #ffc966);
+            box-shadow: 0 0 20px rgba(255, 165, 0, 0.5);
+        }
+
+        .stress-fill.low {
+            background: linear-gradient(90deg, #4CAF50, #66BB6A, #81C784);
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
+
+        .stress-fill.zero {
+            width: 0%;
+            opacity: 0;
+        }
+
+        .question-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 35px;
+            border-radius: 24px;
+            margin-bottom: 35px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .question-box:hover {
+            background: rgba(255, 255, 255, 0.07);
+            transform: translateY(-2px);
+        }
+
+        .question {
+            font-size: 1.4em;
+            line-height: 1.7;
+            text-align: center;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+
+        .word-blank {
+            display: inline-flex;
+            gap: 6px;
+            min-width: 220px;
+            min-height: 55px;
+            padding: 8px 15px;
+            background: rgba(10, 61, 102, 0.4);
+            border: 2px dashed rgba(79, 172, 254, 0.5);
+            border-radius: 16px;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .word-blank:empty {
+            background: rgba(10, 61, 102, 0.2);
+        }
+
+        .letters-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 35px;
+            padding: 30px 20px;
+        }
+
+        .letter-tile {
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, #1e88e5, #42a5f5);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 8px 20px rgba(30, 136, 229, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .letter-tile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .letter-tile:hover::before {
+            left: 100%;
+        }
+
+        .letter-tile:hover:not(.used) {
+            transform: translateY(-8px) scale(1.08);
+            box-shadow: 
+                0 12px 30px rgba(30, 136, 229, 0.6),
+                0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+        }
+
+        .letter-tile:active:not(.used) {
+            transform: translateY(-4px) scale(1.05);
+        }
+
+        .letter-tile.used {
+            opacity: 0.25;
+            cursor: not-allowed;
+            transform: scale(0.9);
+            filter: grayscale(100%);
+        }
+
+        .letter-tile.in-word {
+            background: linear-gradient(135deg, #4CAF50, #66BB6A);
+            box-shadow: 
+                0 8px 20px rgba(76, 175, 80, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+        }
+
+        @keyframes snapIn {
+            0% { 
+                transform: scale(0.3) rotate(-15deg); 
+                opacity: 0; 
+            }
+            60% { 
+                transform: scale(1.15) rotate(5deg); 
+            }
+            100% { 
+                transform: scale(1) rotate(0deg); 
+                opacity: 1; 
+            }
+        }
+
+        .snap-animation {
+            animation: snapIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-12px) rotate(-2deg); }
+            75% { transform: translateX(12px) rotate(2deg); }
+        }
+
+        /* GAME 2 - Bubble Match */
+        .timer-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .timer {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 18px 40px;
+            border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            font-size: 1.8em;
+            font-weight: 800;
+            color: #4facfe;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            letter-spacing: 1px;
+        }
+
+        .timer.warning {
+            animation: pulseWarning 1s infinite;
+            color: #ff6b6b;
+            border-color: #ff6b6b;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        @keyframes pulseWarning {
+            0%, 100% { 
+                transform: scale(1); 
+                box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+            }
+            50% { 
+                transform: scale(1.05); 
+                box-shadow: 0 8px 35px rgba(255, 107, 107, 0.6);
+            }
+        }
+
+        .bubbles-container {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+            margin-bottom: 50px;
+            min-height: 170px;
+        }
+
+        .bubble {
+            width: 170px;
+            height: 170px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            text-align: center;
+            font-size: 0.85em;
+            font-weight: 600;
+            cursor: grab;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 
+                0 12px 30px rgba(102, 126, 234, 0.5),
+                0 0 0 2px rgba(255, 255, 255, 0.2) inset;
+            border: 3px solid rgba(255, 255, 255, 0.25);
+            user-select: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bubble::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            opacity: 0.6;
+        }
+
+        .bubble:hover {
+            transform: scale(1.08) translateY(-5px);
+            box-shadow: 
+                0 15px 40px rgba(102, 126, 234, 0.6),
+                0 0 0 2px rgba(255, 255, 255, 0.3) inset;
+        }
+
+        .bubble:active {
+            cursor: grabbing;
+        }
+
+        .bubble.dragging {
+            opacity: 0.8;
+            transform: scale(1.15) rotate(5deg);
+            z-index: 1000;
+            box-shadow: 0 20px 50px rgba(102, 126, 234, 0.7);
+        }
+
+        .bubble.error {
+            animation: errorShake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff4444 100%);
+        }
+
+        @keyframes errorShake {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(-15px) rotate(-5deg); }
+            75% { transform: translateX(15px) rotate(5deg); }
+        }
+
+        .bubble.matched {
+            opacity: 0;
+            transform: scale(0);
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.36, 0, 0.66, -0.56);
+        }
+
+        .bubble.selected {
+            border-color: #4facfe;
+            box-shadow: 
+                0 15px 40px rgba(79, 172, 254, 0.6),
+                0 0 0 4px rgba(79, 172, 254, 0.4);
+            transform: scale(1.05);
+        }
+
+        .categories-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 40px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .category-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 3px dashed rgba(255, 255, 255, 0.25);
+            border-radius: 20px;
+            padding: 18px 15px;
+            text-align: center;
+            width: 100%;
+            min-height: 120px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .category-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .category-card.drag-over {
+            background: rgba(79, 172, 254, 0.25);
+            border-color: #4facfe;
+            border-style: solid;
+            transform: scale(1.08);
+            box-shadow: 
+                0 15px 40px rgba(79, 172, 254, 0.4),
+                0 0 0 2px rgba(79, 172, 254, 0.3) inset;
+        }
+
+        .category-card h3 {
+            font-size: 1em;
+            margin-bottom: 10px;
+            color: #4facfe;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .category-icon {
+            font-size: 2.8em;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .category-icon.show {
+            opacity: 1;
+            transform: scale(1);
+            animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes popIn {
+            0% { 
+                transform: scale(0) rotate(-180deg); 
+            }
+            50% { 
+                transform: scale(1.3) rotate(10deg); 
+            }
+            100% { 
+                transform: scale(1) rotate(0deg); 
+            }
+        }
+
+        /* GAME 3 - Risk Radar */
+        .dashboard {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 40px;
+            border-radius: 28px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+        }
+
+        .stress-meter-container {
+            margin-bottom: 50px;
+        }
+
+        .stress-value {
+            text-align: center;
+            font-size: 3.5em;
+            font-weight: 800;
+            margin-bottom: 20px;
+            transition: all 0.5s ease;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            letter-spacing: -1px;
+        }
+
+        .stress-value.high {
+            color: #ff4444;
+            text-shadow: 0 4px 20px rgba(255, 68, 68, 0.5);
+        }
+
+        .stress-value.medium {
+            color: #ffa500;
+            text-shadow: 0 4px 20px rgba(255, 165, 0, 0.5);
+        }
+
+        .stress-value.low {
+            color: #4CAF50;
+            text-shadow: 0 4px 20px rgba(76, 175, 80, 0.5);
+        }
+
+        .thermometer {
+            width: 100%;
+            height: 45px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 25px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) inset;
+            position: relative;
+        }
+
+        .thermometer::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+        }
+
+        .thermometer-fill {
+            height: 100%;
+            width: 100%;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 25px;
+            position: relative;
+        }
+
+        .thermometer-fill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        .thermometer-fill.high {
+            background: linear-gradient(90deg, #ff4444, #ff6b6b, #ff8888);
+            box-shadow: 0 0 25px rgba(255, 68, 68, 0.6);
+        }
+
+        .thermometer-fill.medium {
+            background: linear-gradient(90deg, #ffa500, #ffb733, #ffc966);
+            box-shadow: 0 0 25px rgba(255, 165, 0, 0.6);
+        }
+
+        .thermometer-fill.low {
+            background: linear-gradient(90deg, #4CAF50, #66BB6A, #81C784);
+            box-shadow: 0 0 25px rgba(76, 175, 80, 0.6);
+        }
+
+        .practices-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 20px;
+            max-width: 750px;
+            margin: 0 auto;
+        }
+
+        .practice-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 22px 18px;
+            border-radius: 18px;
+            border: 3px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .practice-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .practice-item.active-good {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.2);
+            box-shadow: 0 12px 35px rgba(76, 175, 80, 0.3);
+        }
+
+        .practice-item.active-bad {
+            border-color: #ff4444;
+            background: rgba(255, 68, 68, 0.2);
+            animation: shakeItem 0.5s ease;
+            box-shadow: 0 12px 35px rgba(255, 68, 68, 0.3);
+        }
+
+        @keyframes shakeItem {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        .practice-toggle {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            border: 3px solid rgba(255, 255, 255, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .practice-item.active-good .practice-toggle {
+            background: linear-gradient(135deg, #4CAF50, #66BB6A);
+            border-color: #4CAF50;
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.5);
+        }
+
+        .practice-item.active-bad .practice-toggle {
+            background: linear-gradient(135deg, #ff4444, #ff6b6b);
+            border-color: #ff4444;
+            box-shadow: 0 8px 25px rgba(255, 68, 68, 0.5);
+        }
+
+        .practice-text {
+            flex: 1;
+            font-size: 1em;
+            line-height: 1.5;
+            font-weight: 600;
+        }
+
+        /* Common */
+        .success-popup {
+            position: relative;
+            top: auto;
+            left: auto;
+            transform: none;
+            background: linear-gradient(135deg, #4CAF50, #66BB6A);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 
+                0 15px 45px rgba(76, 175, 80, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            max-width: 90%;
+            width: 100%;
+            margin-top: 25px;
+            display: none;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .success-popup.show {
+            opacity: 1;
+            display: block;
+            animation: slideUpBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes slideUpBounce {
+            0% {
+                opacity: 0;
+                transform: translateY(30px) scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .success-popup h2 {
+            font-size: 1.8em;
+            margin-bottom: 12px;
+            color: white;
+            font-weight: 800;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .success-popup .emoji {
+            font-size: 3em;
+            display: block;
+            margin-bottom: 15px;
+            animation: bounceEmoji 1.5s ease-in-out infinite;
+            filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.3));
+        }
+
+        @keyframes bounceEmoji {
+            0%, 100% { 
+                transform: translateY(0) translateX(0); 
+            }
+            50% { 
+                transform: translateY(-10px) translateX(-10px); 
+            }
+        }
+
+        .success-popup p {
+            font-size: 1.1em;
+            color: white;
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 14px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.3px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-reset {
+            background: rgba(255, 255, 255, 0.12);
+            color: #f5faff;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-reset:hover {
+            background: rgba(255, 255, 255, 0.18);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.35);
+        }
+
+        .btn-reset:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #4CAF50, #66BB6A);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-next:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(76, 175, 80, 0.6);
+        }
+
+        .btn-next:active {
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 15px;
+            }
+
+            .container {
+                padding: 30px 25px;
+                border-radius: 24px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .header .emoji {
+                font-size: 2.8em;
+            }
+
+            .bubble {
+                width: 150px;
+                height: 150px;
+                font-size: 0.8em;
+            }
+
+            .letter-tile {
+                width: 55px;
+                height: 55px;
+                font-size: 1.7em;
+            }
+
+            .word-blank {
+                min-width: 170px;
+                min-height: 50px;
+            }
+
+            .question {
+                font-size: 1.2em;
+            }
+
+            .stress-value {
+                font-size: 2.8em;
+            }
+
+            .btn {
+                padding: 15px 30px;
+                font-size: 1em;
+            }
+
+            .practices-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .categories-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+                max-width: 100%;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- GAME 1: Word Builder -->
+    <div class="game-container active" id="game1">
+        <div class="container">
+            <div class="header">
+                <div class="game-progress">Gioco 1 di 3</div>
+                <span class="emoji">🎯</span>
+                <h1>Word Builder</h1>
+                <p>Ricomponi la parola corretta!</p>
+            </div>
+
+            <div class="stress-bar-container">
+                <div class="stress-label">📊 Livello Stress</div>
+                <div class="stress-bar">
+                    <div class="stress-fill" id="stressFill1"></div>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <div class="question">
+                    Lo stress lavoro-correlato si manifesta quando c'è uno squilibrio tra le richieste nei confronti della persona e le
+                    <span class="word-blank" id="wordBlank1"></span>
+                    disponibili per farvi fronte.
+                </div>
+            </div>
+
+            <div class="letters-container" id="lettersContainer1"></div>
+
+            <div class="buttons">
+                <button class="btn btn-reset" onclick="resetGame1()"><span>🔄 Ricomincia</span></button>
+                <button class="btn btn-next" id="nextBtn1" onclick="goToGame(2)">
+                    <span>Prossima Attività ➡️</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GAME 2: Bubble Match -->
+    <div class="game-container" id="game2">
+        <div class="container">
+            <div class="header">
+                <div class="game-progress">Gioco 2 di 3</div>
+                <span class="emoji">🎈</span>
+                <h1>Caccia allo Stress</h1>
+                <p>Trascina le bolle nelle categorie giuste!</p>
+            </div>
+
+            <div class="timer-container">
+                <div class="timer" id="timer2">⏱️ 30s</div>
+            </div>
+
+            <div class="bubbles-container" id="bubblesContainer2"></div>
+
+            <div class="categories-container" id="categoriesContainer2"></div>
+
+            <div class="buttons">
+                <button class="btn btn-reset" onclick="resetGame2()"><span>🔄 Ricomincia</span></button>
+                <button class="btn btn-next" onclick="goToGame(3)"><span>Prossima Attività ➡️</span></button>
+            </div>
+
+            <div class="success-popup" id="successPopup2">
+                <span class="emoji">🎉</span>
+                <h3>Complimenti!</h2>
+                <p id="successMessage2"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- GAME 3: Risk Radar -->
+    <div class="game-container" id="game3">
+        <div class="container">
+            <div class="header">
+                <div class="game-progress">Gioco 3 di 3</div>
+                <span class="emoji">🎯</span>
+                <h1>Risk Radar</h1>
+                <p>Attiva le pratiche preventive per ridurre lo stress aziendale!</p>
+            </div>
+
+            <div class="dashboard">
+                <div class="stress-meter-container">
+                    <div class="stress-label">🌡️ Livello Stress Aziendale</div>
+                    <div class="stress-value high" id="stressValue3">100%</div>
+                    <div class="thermometer">
+                        <div class="thermometer-fill high" id="thermometerFill3"></div>
+                    </div>
+                </div>
+
+                <div class="practices-container" id="practicesContainer3"></div>
+            </div>
+
+            <div class="buttons">
+                <button class="btn btn-reset" onclick="resetGame3()"><span>🔄 Ricomincia</span></button>
+            </div>
+
+            <div class="success-popup" id="successPopup3">
+               
+                <h2>Complimenti!</h2>
+                <p>Continua il corso cliccando su “vai al modulo successivo”</p>
+                 <span class="emoji">↙️</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === NAVIGATION ===
+        let currentGame = 1;
+        
+        function goToGame(gameNumber) {
+            document.querySelectorAll('.game-container').forEach(g => g.classList.remove('active'));
+            document.getElementById('game' + gameNumber).classList.add('active');
+            currentGame = gameNumber;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            if (gameNumber === 2) {
+                resetGame2();
+            }
+        }
+
+        // === GAME 1: Word Builder ===
+        const correctWord = 'RISORSE';
+        const shuffledLetters = 'SERRISO'.split('');
+        let selectedLetters1 = [];
+        let usedIndices1 = [];
+
+        function initGame1() {
+            renderLetters1();
+            updateStressBar1(false);
+        }
+
+        function renderLetters1() {
+            const container = document.getElementById('lettersContainer1');
+            container.innerHTML = '';
+
+            shuffledLetters.forEach((letter, index) => {
+                const tile = document.createElement('div');
+                tile.className = 'letter-tile';
+                if (usedIndices1.includes(index)) {
+                    tile.classList.add('used');
+                }
+                tile.textContent = letter;
+                tile.onclick = () => selectLetter1(letter, index);
+                container.appendChild(tile);
+            });
+        }
+
+        function selectLetter1(letter, index) {
+            if (usedIndices1.includes(index)) return;
+            if (selectedLetters1.length >= correctWord.length) return;
+
+            selectedLetters1.push(letter);
+            usedIndices1.push(index);
+            
+            updateWordBlank1();
+            renderLetters1();
+            
+            const currentSequence = selectedLetters1.join('');
+            const correctSequence = correctWord.substring(0, selectedLetters1.length);
+            
+            if (currentSequence === correctSequence) {
+                updateStressBar1(false);
+            } else {
+                updateStressBar1(true);
+                
+                setTimeout(() => {
+                    const wordBlank = document.getElementById('wordBlank1');
+                    wordBlank.style.animation = 'shake 0.5s ease';
+                }, 100);
+                
+                setTimeout(() => {
+                    resetGame1();
+                }, 1000);
+                return;
+            }
+            
+            if (selectedLetters1.length === correctWord.length) {
+                checkWord1();
+            }
+        }
+
+        function updateWordBlank1() {
+            const wordBlank = document.getElementById('wordBlank1');
+            wordBlank.innerHTML = '';
+
+            selectedLetters1.forEach((letter, index) => {
+                const tile = document.createElement('div');
+                tile.className = 'letter-tile in-word snap-animation';
+                tile.textContent = letter;
+                tile.onclick = () => removeLetter1(index);
+                wordBlank.appendChild(tile);
+            });
+        }
+
+        function removeLetter1(index) {
+            const letterIndex = usedIndices1[index];
+            selectedLetters1.splice(index, 1);
+            usedIndices1.splice(index, 1);
+            
+            updateWordBlank1();
+            renderLetters1();
+            updateStressBar1(false);
+        }
+
+        function updateStressBar1(increase = false) {
+            const fill = document.getElementById('stressFill1');
+            
+            if (increase) {
+                fill.className = 'stress-fill';
+                fill.style.width = '100%';
+                return;
+            }
+            
+            const progress = selectedLetters1.length;
+            const totalLetters = correctWord.length;
+            const percentage = (progress / totalLetters) * 100;
+            
+            if (progress === 0) {
+                fill.className = 'stress-fill';
+                fill.style.width = '100%';
+            } else if (percentage <= 30) {
+                fill.className = 'stress-fill';
+                fill.style.width = (100 - percentage) + '%';
+            } else if (percentage <= 70) {
+                fill.className = 'stress-fill medium';
+                fill.style.width = (100 - percentage) + '%';
+            } else if (percentage < 100) {
+                fill.className = 'stress-fill low';
+                fill.style.width = (100 - percentage) + '%';
+            } else {
+                fill.className = 'stress-fill zero';
+                fill.style.width = '0%';
+            }
+        }
+
+        function checkWord1() {
+            const userWord = selectedLetters1.join('');
+            
+            if (userWord === correctWord) {
+                setTimeout(() => {
+                    updateStressBar1(false);
+                }, 500);
+            }
+        }
+
+        function resetGame1() {
+            selectedLetters1 = [];
+            usedIndices1 = [];
+            updateWordBlank1();
+            renderLetters1();
+            updateStressBar1(false);
+        }
+
+        // === GAME 2: Bubble Match ===
+        const bubblesData2 = [
+            { id: 1, text: "Stress positivo che aiuta a rispondere armoniosamente alle richieste", category: "eustress" },
+            { id: 2, text: "Stress negativo che provoca disagio e problemi di salute", category: "distress" },
+            { id: 3, text: "Ipertensione, insonnia, disfunzioni alimentari", category: "fisiologici" },
+            { id: 4, text: "Isolamento sociale, mancanza di motivazione", category: "psicologici" }
+        ];
+
+        const categories2 = [
+            { id: "eustress", name: "Eustress", icon: "💪" },
+            { id: "distress", name: "Distress", icon: "😰" },
+            { id: "fisiologici", name: "Effetti Fisiologici", icon: "❤️" },
+            { id: "psicologici", name: "Effetti Psicologici", icon: "😊" }
+        ];
+
+        let timeLeft2 = 30;
+        let timerInterval2 = null;
+        let matchedCount2 = 0;
+        let draggedBubble2 = null;
+        let selectedBubble2 = null;
+        let isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function initGame2() {
+            renderBubbles2();
+            renderCategories2();
+        }
+
+        function renderBubbles2() {
+            const container = document.getElementById('bubblesContainer2');
+            container.innerHTML = '';
+
+            const shuffledBubbles = shuffleArray(bubblesData2);
+
+            shuffledBubbles.forEach(bubble => {
+                const bubbleEl = document.createElement('div');
+                bubbleEl.className = 'bubble';
+                bubbleEl.id = `bubble-${bubble.id}`;
+                bubbleEl.textContent = bubble.text;
+                bubbleEl.draggable = true;
+                bubbleEl.dataset.category = bubble.category;
+                bubbleEl.dataset.bubbleId = bubble.id;
+
+                // Desktop drag events
+                bubbleEl.addEventListener('dragstart', (e) => handleDragStart2(e, bubble.id));
+                bubbleEl.addEventListener('dragend', handleDragEnd2);
+
+                // Touch events for mobile
+                bubbleEl.addEventListener('touchstart', handleTouchStart2, { passive: false });
+                bubbleEl.addEventListener('touchmove', handleTouchMove2, { passive: false });
+                bubbleEl.addEventListener('touchend', handleTouchEnd2, { passive: false });
+
+                container.appendChild(bubbleEl);
+            });
+        }
+
+        function renderCategories2() {
+            const container = document.getElementById('categoriesContainer2');
+            container.innerHTML = '';
+
+            categories2.forEach(cat => {
+                const card = document.createElement('div');
+                card.className = 'category-card';
+                card.id = `category-${cat.id}`;
+                card.dataset.category = cat.id;
+
+                card.innerHTML = `
+                    <h3>${cat.name}</h3>
+                    <div class="category-icon" id="icon-${cat.id}">${cat.icon}</div>
+                `;
+
+                // Desktop drag events
+                card.addEventListener('dragover', handleDragOver2);
+                card.addEventListener('dragleave', handleDragLeave2);
+                card.addEventListener('drop', (e) => handleDrop2(e, cat.id));
+
+                container.appendChild(card);
+            });
+        }
+
+        // Touch variables
+        let touchedBubble2 = null;
+        let touchClone2 = null;
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        function handleTouchStart2(e) {
+            e.preventDefault();
+            const bubble = e.currentTarget;
+            touchedBubble2 = bubble;
+            
+            const touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+
+            // Create clone for visual feedback
+            touchClone2 = bubble.cloneNode(true);
+            touchClone2.style.position = 'fixed';
+            touchClone2.style.left = touch.clientX - bubble.offsetWidth / 2 + 'px';
+            touchClone2.style.top = touch.clientY - bubble.offsetHeight / 2 + 'px';
+            touchClone2.style.width = bubble.offsetWidth + 'px';
+            touchClone2.style.height = bubble.offsetHeight + 'px';
+            touchClone2.style.opacity = '0.8';
+            touchClone2.style.zIndex = '10000';
+            touchClone2.style.pointerEvents = 'none';
+            touchClone2.classList.add('dragging');
+            document.body.appendChild(touchClone2);
+
+            bubble.style.opacity = '0.3';
+        }
+
+        function handleTouchMove2(e) {
+            e.preventDefault();
+            if (!touchClone2) return;
+
+            const touch = e.touches[0];
+            touchClone2.style.left = touch.clientX - touchClone2.offsetWidth / 2 + 'px';
+            touchClone2.style.top = touch.clientY - touchClone2.offsetHeight / 2 + 'px';
+
+            // Check if over a category
+            const categoryUnderTouch = document.elementFromPoint(touch.clientX, touch.clientY);
+            const categoryCard = categoryUnderTouch?.closest('.category-card');
+
+            // Remove drag-over from all
+            document.querySelectorAll('.category-card').forEach(c => c.classList.remove('drag-over'));
+
+            // Add drag-over to current
+            if (categoryCard) {
+                categoryCard.classList.add('drag-over');
+            }
+        }
+
+        function handleTouchEnd2(e) {
+            e.preventDefault();
+            if (!touchClone2 || !touchedBubble2) return;
+
+            const touch = e.changedTouches[0];
+            const elementUnderTouch = document.elementFromPoint(touch.clientX, touch.clientY);
+            const categoryCard = elementUnderTouch?.closest('.category-card');
+
+            // Remove drag-over from all
+            document.querySelectorAll('.category-card').forEach(c => c.classList.remove('drag-over'));
+
+            if (categoryCard) {
+                const categoryId = categoryCard.dataset.category;
+                const bubbleId = parseInt(touchedBubble2.dataset.bubbleId);
+                const bubble = bubblesData2.find(b => b.id === bubbleId);
+
+                if (bubble.category === categoryId) {
+                    matchCorrect2(bubbleId, categoryId);
+                } else {
+                    matchError2(bubbleId);
+                }
+            }
+
+            // Cleanup
+            touchedBubble2.style.opacity = '1';
+            if (touchClone2 && touchClone2.parentNode) {
+                touchClone2.parentNode.removeChild(touchClone2);
+            }
+            touchClone2 = null;
+            touchedBubble2 = null;
+        }
+
+        function handleDragStart2(e, bubbleId) {
+            draggedBubble2 = bubbleId;
+            e.target.classList.add('dragging');
+        }
+
+        function handleDragEnd2(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function handleDragOver2(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave2(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop2(e, categoryId) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+
+            const bubble = bubblesData2.find(b => b.id === draggedBubble2);
+            
+            if (bubble.category === categoryId) {
+                matchCorrect2(draggedBubble2, categoryId);
+            } else {
+                matchError2(draggedBubble2);
+            }
+
+            draggedBubble2 = null;
+        }
+
+        function matchCorrect2(bubbleId, categoryId) {
+            const bubbleEl = document.getElementById(`bubble-${bubbleId}`);
+            const iconEl = document.getElementById(`icon-${categoryId}`);
+
+            bubbleEl.classList.add('matched');
+            iconEl.classList.add('show');
+
+            matchedCount2++;
+
+            if (matchedCount2 === bubblesData2.length) {
+                gameComplete2();
+            }
+        }
+
+        function matchError2(bubbleId) {
+            const bubbleEl = document.getElementById(`bubble-${bubbleId}`);
+            bubbleEl.classList.add('error');
+            
+            setTimeout(() => {
+                bubbleEl.classList.remove('error');
+            }, 500);
+        }
+
+        function startTimer2() {
+            const timerEl = document.getElementById('timer2');
+            
+            timerInterval2 = setInterval(() => {
+                timeLeft2--;
+                timerEl.textContent = `⏱️ ${timeLeft2}s`;
+
+                if (timeLeft2 <= 10) {
+                    timerEl.classList.add('warning');
+                }
+
+                if (timeLeft2 <= 0) {
+                    if (matchedCount2 < bubblesData2.length) {
+                        resetGame2();
+                    }
+                }
+            }, 1000);
+        }
+
+        function gameComplete2() {
+            clearInterval(timerInterval2);
+            const timeTaken = 30 - timeLeft2;
+            
+            const popup = document.getElementById('successPopup2');
+            const msg = document.getElementById('successMessage2');
+            
+            if (msg) {
+                msg.textContent = `Hai completato il gioco in ${timeTaken} secondi! 🎯`;
+            }
+            if (popup) {
+                popup.classList.add('show');
+                setTimeout(() => {
+                    popup.classList.remove('show');
+                }, 4000);
+            }
+        }
+
+        function resetGame2() {
+            clearInterval(timerInterval2);
+            timeLeft2 = 30;
+            matchedCount2 = 0;
+            draggedBubble2 = null;
+            selectedBubble2 = null;
+
+            document.getElementById('timer2').textContent = '⏱️ 30s';
+            document.getElementById('timer2').classList.remove('warning');
+
+            document.querySelectorAll('#game2 .category-icon').forEach(icon => {
+                icon.classList.remove('show');
+            });
+
+            renderBubbles2();
+            startTimer2();
+        }
+
+        // === GAME 3: Risk Radar ===
+        let stressLevel3 = 100;
+        
+        const practicesData3 = [
+            { id: 1, text: "Chiarezza sugli obiettivi aziendali", type: 'good', impact: -25 },
+            { id: 2, text: "Partecipazione dei lavoratori alle decisioni che li riguardano", type: 'good', impact: -25 },
+            { id: 3, text: "Controllo esclusivo delle attività da parte dei dirigenti", type: 'bad', impact: 30 },
+            { id: 4, text: "Formazione delle figure aziendali", type: 'good', impact: -25 },
+            { id: 5, text: "Standardizzazione rigorosa dei processi lavorativi", type: 'bad', impact: 30 }
+        ];
+
+        const practices3 = {};
+        practicesData3.forEach(p => {
+            practices3[p.id] = { active: false, type: p.type, impact: p.impact };
+        });
+
+        function initGame3() {
+            renderPractices3();
+            updateStressMeter3();
+        }
+
+        function renderPractices3() {
+            const container = document.getElementById('practicesContainer3');
+            container.innerHTML = '';
+            
+            const shuffled = shuffleArray(practicesData3);
+            
+            shuffled.forEach(practice => {
+                const div = document.createElement('div');
+                div.className = 'practice-item';
+                div.dataset.id = practice.id;
+                div.onclick = () => togglePractice3(practice.id);
+                
+                div.innerHTML = `
+                    <div class="practice-toggle">⚪</div>
+                    <div class="practice-text">${practice.text}</div>
+                `;
+                
+                container.appendChild(div);
+            });
+        }
+
+        function togglePractice3(id) {
+            const practice = practices3[id];
+            const element = document.querySelector(`#game3 [data-id="${id}"]`);
+            const toggle = element.querySelector('.practice-toggle');
+
+            practice.active = !practice.active;
+
+            if (practice.active) {
+                if (practice.type === 'good') {
+                    element.classList.add('active-good');
+                    element.classList.remove('active-bad');
+                    toggle.textContent = '✅';
+                    stressLevel3 += practice.impact;
+                } else {
+                    element.classList.add('active-bad');
+                    element.classList.remove('active-good');
+                    toggle.textContent = '❌';
+                    stressLevel3 += practice.impact;
+                }
+            } else {
+                element.classList.remove('active-good', 'active-bad');
+                toggle.textContent = '⚪';
+                stressLevel3 -= practice.impact;
+            }
+
+            stressLevel3 = Math.max(0, Math.min(100, stressLevel3));
+            updateStressMeter3();
+            checkWinCondition3();
+        }
+
+        function updateStressMeter3() {
+            const valueEl = document.getElementById('stressValue3');
+            const fillEl = document.getElementById('thermometerFill3');
+
+            valueEl.textContent = stressLevel3 + '%';
+            fillEl.style.width = stressLevel3 + '%';
+
+            valueEl.className = 'stress-value';
+            fillEl.className = 'thermometer-fill';
+
+            if (stressLevel3 >= 70) {
+                valueEl.classList.add('high');
+                fillEl.classList.add('high');
+            } else if (stressLevel3 >= 30) {
+                valueEl.classList.add('medium');
+                fillEl.classList.add('medium');
+            } else {
+                valueEl.classList.add('low');
+                fillEl.classList.add('low');
+            }
+        }
+
+        function checkWinCondition3() {
+            const goodPracticesActive = practices3[1].active && practices3[2].active && practices3[4].active;
+            const badPracticesInactive = !practices3[3].active && !practices3[5].active;
+
+            if (goodPracticesActive && badPracticesInactive && stressLevel3 < 30) {
+                setTimeout(() => {
+                    const popup = document.getElementById('successPopup3');
+                    if (popup) {
+                        popup.classList.add('show');
+                    }
+                }, 500);
+            }
+        }
+
+        function resetGame3() {
+            for (let id in practices3) {
+                practices3[id].active = false;
+            }
+
+            stressLevel3 = 100;
+            updateStressMeter3();
+            
+            const popup = document.getElementById('successPopup3');
+            if (popup) {
+                popup.classList.remove('show');
+            }
+            
+            renderPractices3();
+        }
+
+        // === INITIALIZE ===
+        initGame1();
+        initGame2();
+        initGame3();
+    </script>
+</body>
+</html>
